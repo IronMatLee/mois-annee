@@ -27,14 +27,22 @@
 
     <style>
       :root {
+        /* Hiver: Bleu */
         --winter-bg: #e3f2fd;
         --winter-color: #1565c0;
+
+        /* Printemps: Vert */
         --spring-bg: #e8f5e9;
         --spring-color: #2e7d32;
-        --summer-bg: #fff3e0;
-        --summer-color: #ef6c00;
-        --autumn-bg: #fbe9e7;
-        --autumn-color: #d84315;
+
+        /* Été: Rouge (Chaud) - Modifié */
+        --summer-bg: #ffebee;
+        --summer-color: #c62828;
+
+        /* Automne: Orange (Feuilles) - Modifié */
+        --autumn-bg: #fff3e0;
+        --autumn-color: #ef6c00;
+
         --neutral: #f0f2f5;
         --text: #2c3e50;
       }
@@ -48,7 +56,7 @@
         flex-direction: column;
         overflow: hidden;
         user-select: none;
-        -webkit-tap-highlight-color: transparent; /* Supprime le flash bleu au clic sur Android */
+        -webkit-tap-highlight-color: transparent;
       }
 
       /* --- Header --- */
@@ -60,7 +68,7 @@
         justify-content: space-between;
         align-items: center;
         z-index: 10;
-        flex-shrink: 0; /* Empêche le header de s'écraser */
+        flex-shrink: 0;
       }
 
       h1 {
@@ -130,7 +138,7 @@
       .btn-color {
         color: #e67e22;
         border-left: 8px solid #e67e22;
-      }
+      } /* Orange automne */
       .btn-write {
         color: #9b59b6;
         border-left: 8px solid #9b59b6;
@@ -142,15 +150,15 @@
         display: none;
         flex-direction: column;
         align-items: center;
-        overflow: hidden; /* Important pour le scroll interne */
+        overflow: hidden;
       }
 
       .instruction-bar {
         width: 100%;
         background: #fff;
-        padding: 10px;
+        padding: 15px 10px; /* Un peu plus de hauteur */
         text-align: center;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         color: #555;
         border-bottom: 1px solid #eee;
         flex-shrink: 0;
@@ -172,8 +180,8 @@
         gap: 15px;
         width: 100%;
         max-width: 800px;
-        /* Padding bottom pour éviter que les outils cachent le bas */
-        padding-bottom: 100px;
+        /* Gros padding en bas pour la barre d'outils remontée */
+        padding-bottom: 140px;
         align-content: start;
       }
 
@@ -190,43 +198,46 @@
         cursor: pointer;
         border: 3px solid transparent;
         position: relative;
-        touch-action: manipulation; /* Améliore la réactivité tactile */
+        /* Par défaut, on laisse le navigateur gérer le touch (scroll) */
+        touch-action: pan-y;
+      }
+
+      /* Classe spéciale pour bloquer le scroll native et forcer le drag */
+      .force-drag {
+        touch-action: none !important;
       }
 
       .month-card i,
       .month-card span.emoji {
         font-size: 2.2rem;
         margin-bottom: 8px;
-        color: inherit; /* Prend la couleur du parent */
+        color: inherit;
       }
 
       .month-name {
         font-size: 1.1rem;
         font-weight: bold;
         text-transform: capitalize;
-        pointer-events: none; /* Empêche de sélectionner le texte */
+        pointer-events: none;
       }
 
-      /* --- Styles Spécifiques Drag & Drop (Jeu Ordre) --- */
-
-      /* La carte qu'on tient (Feedback visuel immédiat) */
+      /* --- Styles Drag & Drop --- */
       .sortable-chosen {
         border: 3px solid #3498db !important;
-        transform: scale(1.05);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+        transform: scale(1.1);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3) !important;
         background: #e1f5fe !important;
         z-index: 100;
+        opacity: 1 !important;
       }
 
-      /* La carte fantôme (l'endroit où elle va atterrir) */
       .sortable-ghost {
-        opacity: 0.4;
+        opacity: 0.3;
         background: #ecf0f1 !important;
         border: 2px dashed #bdc3c7 !important;
       }
 
-      /* --- Styles Spécifiques Jeu Couleurs --- */
-      /* Ces classes forcent l'affichage complet (fond + bordure + texte) */
+      /* --- Styles Couleurs --- */
       .style-winter {
         background-color: var(--winter-bg) !important;
         color: var(--winter-color) !important;
@@ -248,14 +259,13 @@
         border-color: var(--autumn-color) !important;
       }
 
-      /* Mode "à colorier" (blanc avec pointillés) */
       .color-mode-neutral {
         background: white;
         border: 3px dashed #ccc;
         color: #ccc;
       }
 
-      /* --- Styles Mode Apprendre --- */
+      /* --- Mode Apprendre --- */
       .learn-mode-card {
         transition: transform 0.2s;
       }
@@ -270,7 +280,7 @@
         opacity: 0.5;
       }
 
-      /* --- Styles Jeu Écriture --- */
+      /* --- Jeu Écriture --- */
       .input-month {
         width: 90%;
         padding: 5px;
@@ -288,7 +298,9 @@
         left: 0;
         width: 100%;
         background: white;
-        padding: 10px 15px;
+        /* Padding augmenté en bas pour éviter la barre nav Android */
+        /* max(20px, ...) assure au moins 20px de marge */
+        padding: 15px 15px max(25px, env(safe-area-inset-bottom)) 15px;
         display: flex;
         justify-content: center;
         gap: 10px;
@@ -298,7 +310,7 @@
       }
 
       .tool-btn {
-        flex: 1; /* Boutons élastiques */
+        flex: 1;
         max-width: 120px;
         padding: 12px 0;
         border-radius: 12px;
@@ -342,10 +354,9 @@
       .btn-back {
         background: #95a5a6;
         color: white;
-        flex: 0 0 60px; /* Taille fixe pour retour */
+        flex: 0 0 60px;
       }
 
-      /* Feedback états */
       .wrong {
         animation: shake 0.4s;
         border-color: #e74c3c !important;
@@ -353,6 +364,18 @@
       .correct {
         border-color: #2ecc71 !important;
         transform: scale(1.05);
+      }
+
+      /* --- Version Tag --- */
+      .version-tag {
+        position: fixed;
+        bottom: 2px;
+        right: 5px;
+        font-size: 0.6rem;
+        color: #bdc3c7;
+        z-index: 200; /* Au-dessus de la barre d'outils */
+        pointer-events: none; /* Laisse passer les clics */
+        font-family: sans-serif;
       }
 
       @keyframes shake {
@@ -379,6 +402,9 @@
           font-size: 0.9rem;
           padding: 8px 0;
         }
+        .tools-bar {
+          padding-bottom: max(30px, env(safe-area-inset-bottom));
+        } /* Encore plus de marge sur petit écran */
       }
     </style>
   </head>
@@ -418,6 +444,9 @@
 
     <!-- Barre d'outils -->
     <div class="tools-bar" id="tools-bar" style="display: none"></div>
+
+    <!-- Tag de Version -->
+    <div class="version-tag">v1.1</div>
 
     <script>
       // --- Configuration ---
@@ -505,8 +534,8 @@
       const seasons = {
         winter: { name: "Hiver", color: "#1565c0", bg: "#e3f2fd" },
         spring: { name: "Printemps", color: "#2e7d32", bg: "#e8f5e9" },
-        summer: { name: "Été", color: "#ef6c00", bg: "#fff3e0" },
-        autumn: { name: "Automne", color: "#d84315", bg: "#fbe9e7" },
+        summer: { name: "Été", color: "#c62828", bg: "#ffebee" }, // Rouge
+        autumn: { name: "Automne", color: "#ef6c00", bg: "#fff3e0" }, // Orange
       };
 
       let currentMode = "";
@@ -514,20 +543,17 @@
       let score = 0;
       let sortableInstance = null;
 
-      // --- Moteur Vocal ---
       function speak(text) {
         if ("speechSynthesis" in window) {
-          // Annuler la lecture en cours s'il y en a une
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = "fr-FR";
-          utterance.rate = 0.9; // Un peu plus lent pour bien comprendre
-          utterance.pitch = 1.1; // Un peu plus aigu pour être joyeux
+          utterance.rate = 0.9;
+          utterance.pitch = 1.1;
           window.speechSynthesis.speak(utterance);
         }
       }
 
-      // --- Navigation ---
       function startGame(mode) {
         currentMode = mode;
         document.getElementById("menu-screen").style.display = "none";
@@ -554,7 +580,6 @@
         window.speechSynthesis.cancel();
       }
 
-      // --- Générateur de Cartes ---
       function createCard(month) {
         const div = document.createElement("div");
         div.className = "month-card";
@@ -576,22 +601,15 @@
         const grid = document.getElementById("grid");
         const toolsBar = document.getElementById("tools-bar");
 
-        // Affichage simple dans l'ordre avec bonnes couleurs
         monthsData.forEach((m) => {
           const card = createCard(m);
-          // Application directe du style correct
           card.classList.add(`style-${m.season}`, "learn-mode-card");
-
-          // Petit icone son
           const soundIcon = document.createElement("i");
           soundIcon.className = "fa-solid fa-volume-high audio-hint";
           card.appendChild(soundIcon);
-
           card.onclick = () => {
-            // Animation click
             card.style.transform = "scale(0.95)";
             setTimeout(() => (card.style.transform = "scale(1)"), 150);
-            // Audio
             speak(m.name);
           };
           grid.appendChild(card);
@@ -606,28 +624,29 @@
           "Glisse les étiquettes pour les mettre dans l'ordre !";
         const grid = document.getElementById("grid");
 
-        // Mélange
         let shuffled = [...monthsData].sort(() => Math.random() - 0.5);
 
         shuffled.forEach((m) => {
           const card = createCard(m);
           card.style.cursor = "grab";
-          // Couleur neutre au départ pour ne pas donner d'indice de saison (optionnel, ici on met neutre)
+          // Important : Désactiver les actions tactiles natives (scroll) sur les cartes
+          // pour que le Drag & Drop prenne la priorité absolue
+          card.classList.add("force-drag");
+
           card.style.background = "white";
           card.style.color = "#555";
           grid.appendChild(card);
         });
 
-        // Config Drag & Drop Améliorée
+        // Config Drag & Drop optimisée pour tactile
         sortableInstance = new Sortable(grid, {
-          animation: 250, // Animation fluide
-          delay: 100, // Petit délai pour éviter le drag accidentel sur touch
-          delayOnTouchOnly: true,
-          chosenClass: "sortable-chosen", // Classe quand on tient l'item
-          ghostClass: "sortable-ghost", // Classe de l'emplacement vide
-          forceFallback: false, // Utiliser le DnD natif HTML5 (souvent plus fluide sur Chrome Android récent)
+          animation: 200,
+          delay: 0, // Instantané
+          touchStartThreshold: 5, // Faut bouger un peu pour commencer le drag (évite les clics accidentels)
+          chosenClass: "sortable-chosen",
+          ghostClass: "sortable-ghost",
+          forceFallback: false,
           onStart: function (evt) {
-            // Petit retour haptique si supporté (vibration)
             if (navigator.vibrate) navigator.vibrate(20);
           },
         });
@@ -643,7 +662,6 @@
           const id = parseInt(card.getAttribute("data-id"));
           if (id === index + 1) {
             card.classList.add("correct");
-            // Révéler la vraie couleur quand c'est bon pour faire joli
             const season = card.getAttribute("data-season");
             card.classList.add(`style-${season}`);
           } else {
@@ -652,7 +670,6 @@
             errors++;
           }
         });
-
         if (errors === 0) handleWin();
       }
 
@@ -664,12 +681,11 @@
 
         monthsData.forEach((m) => {
           const card = createCard(m);
-          card.classList.add("color-mode-neutral"); // Blanc + pointillés
+          card.classList.add("color-mode-neutral");
           card.onclick = () => applyColor(card);
           grid.appendChild(card);
         });
 
-        // Palette
         const toolsBar = document.getElementById("tools-bar");
         toolsBar.innerHTML = `<button class="tool-btn btn-back" onclick="returnToMenu()"><i class="fa-solid fa-arrow-left"></i></button>`;
 
@@ -691,7 +707,6 @@
         validateBtn.onclick = validateColor;
         toolsBar.appendChild(validateBtn);
 
-        // Select premier outil
         selectColorTool("winter", toolsBar.children[1]);
       }
 
@@ -705,26 +720,15 @@
 
       function applyColor(card) {
         if (!selectedColorTool) return;
-
-        // 1. Enlever style neutre
         card.classList.remove("color-mode-neutral");
-
-        // 2. Enlever toutes les anciennes classes de style
         card.classList.remove(
           "style-winter",
           "style-spring",
           "style-summer",
           "style-autumn"
         );
-
-        // 3. Ajouter la nouvelle classe (Force Background, Border, Text)
         card.classList.add(`style-${selectedColorTool}`);
-
-        // 4. Stocker le choix
         card.setAttribute("data-user-choice", selectedColorTool);
-
-        // Audio feedback léger (nom de la saison)
-        // speak(seasons[selectedColorTool].name); // Optionnel, peut être saoulant
       }
 
       function validateColor() {
@@ -751,7 +755,6 @@
         const grid = document.getElementById("grid");
         const toolsBar = document.getElementById("tools-bar");
 
-        // Cacher 3 à 4 mois
         const hiddenIndices = [];
         while (hiddenIndices.length < 4) {
           let r = Math.floor(Math.random() * 12);
@@ -760,9 +763,7 @@
 
         monthsData.forEach((m, index) => {
           const card = createCard(m);
-          // On affiche la couleur pour aider, sinon c'est trop dur
           card.classList.add(`style-${m.season}`);
-
           if (hiddenIndices.includes(index)) {
             card.querySelector(".month-name").style.display = "none";
             const input = document.createElement("input");
@@ -800,7 +801,6 @@
         if (errors === 0) handleWin();
       }
 
-      // --- Helpers ---
       function setupValidationButton(fn) {
         const toolsBar = document.getElementById("tools-bar");
         toolsBar.innerHTML = `
