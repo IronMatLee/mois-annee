@@ -138,7 +138,7 @@
       .btn-quiz {
         color: #e74c3c;
         border-left: 8px solid #e74c3c;
-      } /* Nouveau bouton Quiz */
+      }
 
       /* --- Zone de Jeu --- */
       #game-area {
@@ -159,7 +159,7 @@
         color: #555;
         border-bottom: 1px solid #eee;
         flex-shrink: 0;
-        min-height: 60px; /* Hauteur min pour les questions sur 2 lignes */
+        min-height: 60px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -291,6 +291,7 @@
         touch-action: pan-y;
         width: 100%;
         box-sizing: border-box;
+        color: #555; /* Default color neutral */
       }
 
       .force-drag {
@@ -300,11 +301,11 @@
       .month-card i,
       .month-card svg {
         font-size: 2rem;
-        height: 2rem; /* Fix pour SVG */
+        height: 2rem;
         width: 2rem;
         margin-bottom: 5px;
         color: inherit;
-        fill: currentColor; /* Important pour que le SVG prenne la couleur du texte */
+        fill: currentColor;
       }
 
       .month-name {
@@ -354,7 +355,7 @@
       .color-mode-neutral {
         background: white;
         border: 3px dashed #ccc;
-        color: #ccc;
+        color: #ccc !important;
       }
 
       /* --- Mode Apprendre --- */
@@ -453,6 +454,12 @@
         color: white;
         flex: 0 0 70px;
       }
+      .btn-next {
+        background: #f39c12 !important;
+        color: white !important;
+        opacity: 1;
+        box-shadow: 0 4px 0 #d35400;
+      }
 
       .wrong {
         animation: shake 0.4s;
@@ -505,7 +512,7 @@
         }
         .quiz-container {
           grid-template-columns: 1fr;
-        } /* Quiz en colonne sur mobile */
+        }
         h1 {
           font-size: 1.5rem;
         }
@@ -550,7 +557,6 @@
     <div id="game-area">
       <div class="instruction-bar" id="instruction-text">Consigne...</div>
       <div class="scroll-container" id="scroll-container">
-        <!-- Conteneur générique -->
         <div
           id="game-content"
           style="width: 100%; display: flex; justify-content: center"
@@ -562,14 +568,11 @@
     <div class="tools-bar" id="tools-bar" style="display: none"></div>
 
     <!-- Tag de Version -->
-    <div class="version-tag">v2.1</div>
+    <div class="version-tag">v2.2</div>
 
     <script>
-      // --- SVG Citrouille (Pumpkin) ---
-      // Simple path SVG pour remplacer l'emoji
-      const pumpkinSVG = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M256 160c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48zm224.9 69c-9-33.6-33.8-61.9-66.7-77.9-1.9-.9-5.1-.9-6.9 1-17.6 18.6-43.1 30.7-71.3 30.7-18.2 0-35.3-5.2-50.2-14.2-7.2-4.3-15-8.2-23.2-11.7 4.2-11.8 6.5-24.5 6.5-37.9 0-61.9-50.1-112-112-112S44 58.1 44 120c0 13.4 2.3 26.1 6.5 37.9-8.3 3.5-16 7.4-23.2 11.7C12.5 178.6 0 196.2 0 215c0 101.6 114.6 184 256 184s256-82.4 256-184c0-11-3.6-21.2-10.1-30zM256 352c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"/></svg>`;
+      const pumpkinSVG = `<svg viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M256 160c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48zm224.9 69c-9-33.6-33.8-61.9-66.7-77.9-1.9-.9-5.1-.9-6.9 1-17.6 18.6-43.1 30.7-71.3 30.7-18.2 0-35.3-5.2-50.2-14.2-7.2-4.3-15-8.2-23.2-11.7 4.2-11.8 6.5-24.5 6.5-37.9 0-61.9-50.1-112-112-112S44 58.1 44 120c0 13.4 2.3 26.1 6.5 37.9-8.3 3.5-16 7.4-23.2 11.7C12.5 178.6 0 196.2 0 215c0 101.6 114.6 184 256 184s256-82.4 256-184c0-11-3.6-21.2-10.1-30zM256 352c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"/></svg>`;
 
-      // --- Configuration ---
       const monthsData = [
         {
           id: 1,
@@ -605,7 +608,7 @@
           season: "autumn",
           icon: "fa-solid fa-school",
         },
-        { id: 10, name: "Octobre", season: "autumn", customSvg: pumpkinSVG }, // Utilise le SVG custom
+        { id: 10, name: "Octobre", season: "autumn", customSvg: pumpkinSVG },
         {
           id: 11,
           name: "Novembre",
@@ -627,18 +630,29 @@
         autumn: { name: "Automne", color: "#ef6c00", bg: "#fff3e0" },
       };
 
-      const quizQuestions = [
-        { q: "Quel est le mois de Noël ?", a: 12 },
-        { q: "Quand fête-t-on Halloween ?", a: 10 },
-        { q: "Le premier mois de l'année ?", a: 1 },
-        { q: "A quel mois cherche-t-on les œufs de Pâques ?", a: 4 },
-        { q: "C'est la rentrée des classes !", a: 9 },
-        { q: "Le mois de la fête de la musique (et l'été) ?", a: 6 },
-        { q: "Le mois des vacances (Juillet et... ?) ?", a: 8 },
-        { q: "Le mois des amoureux (Saint Valentin) ?", a: 2 },
-        { q: "Le dernier mois de l'année ?", a: 12 },
-        { q: "Le mois du poisson d'...", a: 4 },
-        { q: "En quel mois commence le Printemps ?", a: 3 },
+      const allQuizQuestions = [
+        { q: "Quel est le premier mois de l'année ?", a: 1 },
+        { q: "Quel est le dernier mois de l'année ?", a: 12 },
+        { q: "Quel mois fête-t-on Halloween ?", a: 10 },
+        { q: "On mange les œufs de Pâques en :", a: 4 },
+        { q: "Noël se fête en :", a: 12 },
+        { q: "Laure est née en :", a: 9 },
+        { q: "Baptiste est né en :", a: 11 },
+        { q: "Papa est né en :", a: 3 },
+        { q: "Maman est née en :", a: 7 },
+        { q: "On mange la Galette des Rois en :", a: 1 },
+        { q: "On mange des crêpes pour la Chandeleur en :", a: 2 },
+        { q: "Les amoureux fêtent la Saint-Valentin en :", a: 2 },
+        { q: "Tu peux avoir un poisson collé dans ton dos en :", a: 4 },
+        { q: "La rentrée des classes, c'est en :", a: 9 },
+        { q: "Le premier mois de l'été est en :", a: 6 },
+        { q: "Le dernier mois de l'été est en :", a: 8 },
+        { q: "Le premier mois de l'automne est en :", a: 9 },
+        { q: "Le dernier mois de l'automne est en :", a: 11 },
+        { q: "Le premier mois de l'hiver est en :", a: 12 },
+        { q: "Le dernier mois de l'hiver est en :", a: 2 },
+        { q: "Le premier mois du printemps est en :", a: 3 },
+        { q: "Le dernier mois du printemps est en :", a: 5 },
       ];
 
       let currentMode = "";
@@ -646,7 +660,10 @@
       let score = 0;
       let sortableInstances = [];
 
-      // --- Init ---
+      // Quiz vars
+      let currentQuizQueue = [];
+      let currentQuizIndex = 0;
+
       window.onload = function () {
         const savedScore = localStorage.getItem("baptiste_score");
         if (savedScore) {
@@ -702,14 +719,9 @@
         div.setAttribute("data-id", month.id);
         div.setAttribute("data-season", month.season);
 
-        // Gestion Icone FontAwesome vs SVG Custom
-        let iconHtml = "";
-        if (month.customSvg) {
-          iconHtml = month.customSvg;
-        } else {
-          iconHtml = `<i class="${month.icon}"></i>`;
-        }
-
+        let iconHtml = month.customSvg
+          ? month.customSvg
+          : `<i class="${month.icon}"></i>`;
         div.innerHTML = `${iconHtml}<div class="month-name">${month.name}</div>`;
         return div;
       }
@@ -744,19 +756,16 @@
       function setupOrderGame() {
         document.getElementById("instruction-text").textContent =
           "Glisse chaque étiquette dans la case numérotée correspondante.";
-
         const wrapper = document.createElement("div");
         wrapper.className = "order-game-layout";
 
         const slotsContainer = document.createElement("div");
         slotsContainer.className = "slots-container";
-
         for (let i = 1; i <= 12; i++) {
           const slot = document.createElement("div");
           slot.className = "slot-box";
           slot.setAttribute("data-number", i);
           slot.setAttribute("data-slot-id", i);
-
           const sortable = new Sortable(slot, {
             group: "months",
             animation: 150,
@@ -770,7 +779,6 @@
 
         const poolContainer = document.createElement("div");
         poolContainer.className = "pool-container";
-
         let shuffled = [...monthsData].sort(() => Math.random() - 0.5);
         shuffled.forEach((m) => {
           const card = createCard(m);
@@ -780,7 +788,6 @@
           card.style.color = "#555";
           poolContainer.appendChild(card);
         });
-
         const sortablePool = new Sortable(poolContainer, {
           group: "months",
           animation: 150,
@@ -803,7 +810,6 @@
         const slots = document.querySelectorAll(".slot-box");
         let errors = 0;
         let empty = 0;
-
         slots.forEach((slot) => {
           const slotId = parseInt(slot.getAttribute("data-slot-id"));
           const card = slot.firstElementChild;
@@ -823,9 +829,8 @@
             errors++;
           }
         });
-
         if (errors === 0) {
-          handleWin();
+          handleWin("order");
         } else if (empty > 0) {
           document.getElementById("instruction-text").textContent =
             "Il reste des cases vides !";
@@ -838,16 +843,13 @@
         }
       }
 
-      // --- JEU 2 : Couleurs (MÉLANGÉ) ---
+      // --- JEU 2 : Couleurs ---
       function setupColorGame() {
         document.getElementById("instruction-text").textContent =
           "Choisis une saison en bas, puis colorie les mois.";
         const grid = document.createElement("div");
         grid.className = "months-grid";
-
-        // MÉLANGE AJOUTÉ ICI
         let shuffled = [...monthsData].sort(() => Math.random() - 0.5);
-
         shuffled.forEach((m) => {
           const card = createCard(m);
           card.classList.add("color-mode-neutral");
@@ -858,7 +860,6 @@
 
         const toolsBar = document.getElementById("tools-bar");
         toolsBar.innerHTML = `<button class="tool-btn btn-back" onclick="returnToMenu()"><i class="fa-solid fa-arrow-left"></i></button>`;
-
         Object.keys(seasons).forEach((key) => {
           const s = seasons[key];
           const btn = document.createElement("button");
@@ -869,15 +870,12 @@
           btn.onclick = () => selectColorTool(key, btn);
           toolsBar.appendChild(btn);
         });
-
         const validateBtn = document.createElement("button");
         validateBtn.className = "tool-btn btn-validate";
-        validateBtn.id = "validate-btn";
         validateBtn.innerHTML =
           '<i class="fa-solid fa-check"></i><span>OK</span>';
         validateBtn.onclick = validateColor;
         toolsBar.appendChild(validateBtn);
-
         selectColorTool("winter", toolsBar.children[1]);
       }
 
@@ -916,7 +914,7 @@
             errors++;
           }
         });
-        if (errors === 0) handleWin();
+        if (errors === 0) handleWin("color");
       }
 
       // --- JEU 3 : Écriture ---
@@ -925,13 +923,11 @@
           "Écris le nom des mois disparus.";
         const grid = document.createElement("div");
         grid.className = "months-grid";
-
         const hiddenIndices = [];
         while (hiddenIndices.length < 4) {
           let r = Math.floor(Math.random() * 12);
           if (!hiddenIndices.includes(r)) hiddenIndices.push(r);
         }
-
         monthsData.forEach((m, index) => {
           const card = createCard(m);
           card.classList.add(`style-${m.season}`);
@@ -947,7 +943,6 @@
           grid.appendChild(card);
         });
         document.getElementById("game-content").appendChild(grid);
-
         setupValidationButton(validateWrite);
       }
 
@@ -970,32 +965,39 @@
             }
           }
         });
-        if (errors === 0) handleWin();
+        if (errors === 0) handleWin("write");
       }
 
       // --- JEU 4 : LE QUIZ ---
       function setupQuizGame() {
-        // 1. Choix question
-        const qData =
-          quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
-        document.getElementById("instruction-text").textContent = qData.q;
+        // Initialisation de la queue
+        let shuffledAll = [...allQuizQuestions].sort(() => Math.random() - 0.5);
+        currentQuizQueue = shuffledAll.slice(0, 10);
+        currentQuizIndex = 0;
+        showQuizQuestion();
+      }
+
+      function showQuizQuestion() {
+        const gameContent = document.getElementById("game-content");
+        gameContent.innerHTML = "";
+
+        const qData = currentQuizQueue[currentQuizIndex];
+        document.getElementById("instruction-text").textContent = `Question ${
+          currentQuizIndex + 1
+        }/10 : ${qData.q}`;
         speak(qData.q);
 
-        // 2. Préparation réponses
         const correctMonth = monthsData.find((m) => m.id === qData.a);
         let options = [correctMonth];
 
-        // 3. Ajouter 3 faux (aléatoires et uniques)
+        // 3 faux mois ALÉATOIRES
         while (options.length < 4) {
           const randomM =
             monthsData[Math.floor(Math.random() * monthsData.length)];
           if (!options.includes(randomM)) options.push(randomM);
         }
-
-        // 4. Mélanger
         options.sort(() => Math.random() - 0.5);
 
-        // 5. Affichage
         const container = document.createElement("div");
         container.className = "quiz-container";
 
@@ -1004,23 +1006,56 @@
           btn.className = "quiz-option";
           btn.textContent = opt.name;
           btn.onclick = () => {
+            // Désactiver clic si déjà répondu
+            if (
+              btn.classList.contains("correct") ||
+              btn.classList.contains("wrong")
+            )
+              return;
+
             if (opt.id === qData.a) {
-              // Gagné
               btn.classList.add("correct");
-              handleWin(true); // true = mode quiz (pas de bouton replay, mais suivant)
+              handleQuizCorrect();
             } else {
-              // Perdu
               btn.classList.add("wrong");
               setTimeout(() => btn.classList.remove("wrong"), 500);
             }
           };
           container.appendChild(btn);
         });
+        gameContent.appendChild(container);
 
-        document.getElementById("game-content").appendChild(container);
-
+        // Bouton retour seulement
         const toolsBar = document.getElementById("tools-bar");
         toolsBar.innerHTML = `<button class="tool-btn btn-back" onclick="returnToMenu()"><i class="fa-solid fa-arrow-left"></i></button>`;
+      }
+
+      function handleQuizCorrect() {
+        confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
+
+        // Afficher bouton suivant
+        const toolsBar = document.getElementById("tools-bar");
+        const isLast = currentQuizIndex === 9;
+        const btnText = isLast ? "TERMINER" : "SUIVANT";
+        const btnIcon = isLast ? "fa-flag-checkered" : "fa-arrow-right";
+
+        toolsBar.innerHTML = `
+                <button class="tool-btn btn-back" onclick="returnToMenu()"><i class="fa-solid fa-arrow-left"></i></button>
+                <button class="tool-btn btn-next" onclick="nextQuizStep()">
+                    <i class="fa-solid ${btnIcon}"></i>
+                    <span>${btnText}</span>
+                </button>
+            `;
+      }
+
+      function nextQuizStep() {
+        currentQuizIndex++;
+        if (currentQuizIndex < 10) {
+          showQuizQuestion();
+        } else {
+          // Fin du quiz
+          handleWin("quiz");
+        }
       }
 
       function setupValidationButton(fn) {
@@ -1032,7 +1067,7 @@
         window.applyValidation = fn;
       }
 
-      function handleWin(isQuiz = false) {
+      function handleWin(mode) {
         score += 10;
         localStorage.setItem("baptiste_score", score);
         updateScoreDisplay();
@@ -1041,27 +1076,16 @@
         speak("Bravo, c'est gagné !");
 
         const toolsBar = document.getElementById("tools-bar");
-
-        let btnIcon = "fa-rotate-right";
-        let btnText = "REJOUER";
-
-        if (isQuiz) {
-          btnIcon = "fa-arrow-right";
-          btnText = "SUIVANT";
-          document.getElementById("instruction-text").textContent =
-            "BRAVO ! Question suivante ?";
-        } else {
-          document.getElementById("instruction-text").textContent =
-            "BRAVO BAPTISTE ! 🎉";
-        }
+        document.getElementById("instruction-text").textContent =
+          "BRAVO BAPTISTE ! 🎉";
 
         toolsBar.innerHTML = `
                 <button class="tool-btn btn-back" onclick="returnToMenu()">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
-                <button class="tool-btn btn-replay" onclick="startGame('${currentMode}')">
-                    <i class="fa-solid ${btnIcon}"></i>
-                    <span>${btnText}</span>
+                <button class="tool-btn btn-replay" onclick="startGame('${mode}')">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>REJOUER</span>
                 </button>
             `;
       }
