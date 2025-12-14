@@ -27,22 +27,14 @@
 
     <style>
       :root {
-        /* Hiver: Bleu */
         --winter-bg: #e3f2fd;
         --winter-color: #1565c0;
-
-        /* Printemps: Vert */
         --spring-bg: #e8f5e9;
         --spring-color: #2e7d32;
-
-        /* Été: Rouge (Chaud) - Modifié */
         --summer-bg: #ffebee;
         --summer-color: #c62828;
-
-        /* Automne: Orange (Feuilles) - Modifié */
         --autumn-bg: #fff3e0;
         --autumn-color: #ef6c00;
-
         --neutral: #f0f2f5;
         --text: #2c3e50;
       }
@@ -138,11 +130,15 @@
       .btn-color {
         color: #e67e22;
         border-left: 8px solid #e67e22;
-      } /* Orange automne */
+      }
       .btn-write {
         color: #9b59b6;
         border-left: 8px solid #9b59b6;
       }
+      .btn-quiz {
+        color: #e74c3c;
+        border-left: 8px solid #e74c3c;
+      } /* Nouveau bouton Quiz */
 
       /* --- Zone de Jeu --- */
       #game-area {
@@ -151,17 +147,22 @@
         flex-direction: column;
         align-items: center;
         overflow: hidden;
+        position: relative;
       }
 
       .instruction-bar {
         width: 100%;
         background: #fff;
-        padding: 15px 10px; /* Un peu plus de hauteur */
+        padding: 15px 10px;
         text-align: center;
         font-size: 1.2rem;
         color: #555;
         border-bottom: 1px solid #eee;
         flex-shrink: 0;
+        min-height: 60px; /* Hauteur min pour les questions sur 2 lignes */
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .scroll-container {
@@ -171,7 +172,9 @@
         padding: 20px;
         box-sizing: border-box;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 180px;
       }
 
       .months-grid {
@@ -180,16 +183,102 @@
         gap: 15px;
         width: 100%;
         max-width: 800px;
-        /* Gros padding en bas pour la barre d'outils remontée */
-        padding-bottom: 140px;
         align-content: start;
       }
 
+      /* --- QUIZ LAYOUT --- */
+      .quiz-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        width: 100%;
+        max-width: 600px;
+        margin-top: 20px;
+      }
+
+      .quiz-option {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #bdc3c7;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--text);
+        border: 2px solid transparent;
+        transition: transform 0.1s;
+      }
+
+      .quiz-option:active {
+        transform: translateY(4px);
+        box-shadow: none;
+      }
+      .quiz-option.correct {
+        background: #2ecc71;
+        color: white;
+        border-color: #27ae60;
+        box-shadow: 0 4px 0 #27ae60;
+      }
+      .quiz-option.wrong {
+        background: #e74c3c;
+        color: white;
+        border-color: #c0392b;
+        animation: shake 0.4s;
+      }
+
+      /* --- LAYOUT ORDRE --- */
+      .order-game-layout {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 900px;
+        gap: 30px;
+      }
+
+      .slots-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        width: 100%;
+      }
+
+      .slot-box {
+        background: rgba(255, 255, 255, 0.5);
+        border: 3px dashed #bdc3c7;
+        border-radius: 15px;
+        min-height: 100px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .slot-box::before {
+        content: attr(data-number);
+        position: absolute;
+        font-size: 3rem;
+        font-weight: bold;
+        color: #e0e0e0;
+        z-index: 0;
+      }
+
+      .pool-container {
+        background: #e8eaf6;
+        border-radius: 15px;
+        padding: 15px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        min-height: 150px;
+      }
+
+      /* --- CARTE COMMUNE --- */
       .month-card {
         background: white;
         border-radius: 15px;
         padding: 10px;
-        min-height: 110px;
+        min-height: 100px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -198,24 +287,28 @@
         cursor: pointer;
         border: 3px solid transparent;
         position: relative;
-        /* Par défaut, on laisse le navigateur gérer le touch (scroll) */
+        z-index: 2;
         touch-action: pan-y;
+        width: 100%;
+        box-sizing: border-box;
       }
 
-      /* Classe spéciale pour bloquer le scroll native et forcer le drag */
       .force-drag {
         touch-action: none !important;
       }
 
       .month-card i,
-      .month-card span.emoji {
-        font-size: 2.2rem;
-        margin-bottom: 8px;
+      .month-card svg {
+        font-size: 2rem;
+        height: 2rem; /* Fix pour SVG */
+        width: 2rem;
+        margin-bottom: 5px;
         color: inherit;
+        fill: currentColor; /* Important pour que le SVG prenne la couleur du texte */
       }
 
       .month-name {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: bold;
         text-transform: capitalize;
         pointer-events: none;
@@ -224,13 +317,12 @@
       /* --- Styles Drag & Drop --- */
       .sortable-chosen {
         border: 3px solid #3498db !important;
-        transform: scale(1.1);
+        transform: scale(1.05);
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3) !important;
         background: #e1f5fe !important;
         z-index: 100;
         opacity: 1 !important;
       }
-
       .sortable-ghost {
         opacity: 0.3;
         background: #ecf0f1 !important;
@@ -298,26 +390,25 @@
         left: 0;
         width: 100%;
         background: white;
-        /* Padding augmenté en bas pour éviter la barre nav Android */
-        /* max(20px, ...) assure au moins 20px de marge */
-        padding: 15px 15px max(25px, env(safe-area-inset-bottom)) 15px;
+        padding: 15px 15px max(60px, env(safe-area-inset-bottom)) 15px;
         display: flex;
         justify-content: center;
         gap: 10px;
-        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
         z-index: 100;
         box-sizing: border-box;
+        border-top: 1px solid #f0f0f0;
       }
 
       .tool-btn {
         flex: 1;
-        max-width: 120px;
+        max-width: 140px;
         padding: 12px 0;
         border-radius: 12px;
         border: none;
         font-weight: bold;
         font-family: "Fredoka", sans-serif;
-        font-size: 1rem;
+        font-size: 1.1rem;
         cursor: pointer;
         opacity: 0.6;
         transition: all 0.2s;
@@ -351,10 +442,16 @@
         box-shadow: none;
       }
 
+      .btn-replay {
+        background: #3498db !important;
+        color: white !important;
+        opacity: 1;
+        box-shadow: 0 4px 0 #2980b9;
+      }
       .btn-back {
         background: #95a5a6;
         color: white;
-        flex: 0 0 60px;
+        flex: 0 0 70px;
       }
 
       .wrong {
@@ -369,13 +466,18 @@
       /* --- Version Tag --- */
       .version-tag {
         position: fixed;
-        bottom: 2px;
+        bottom: 5px;
         right: 5px;
-        font-size: 0.6rem;
-        color: #bdc3c7;
-        z-index: 200; /* Au-dessus de la barre d'outils */
-        pointer-events: none; /* Laisse passer les clics */
+        font-size: 0.9rem;
+        color: #2c3e50;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 2px 6px;
+        border-radius: 4px;
+        z-index: 10000;
+        pointer-events: none;
         font-family: sans-serif;
+        font-weight: bold;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
       }
 
       @keyframes shake {
@@ -391,10 +493,19 @@
         }
       }
 
-      @media (max-width: 600px) {
+      @media (max-width: 800px) {
         .months-grid {
           grid-template-columns: repeat(2, 1fr);
         }
+        .slots-container {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .pool-container {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .quiz-container {
+          grid-template-columns: 1fr;
+        } /* Quiz en colonne sur mobile */
         h1 {
           font-size: 1.5rem;
         }
@@ -402,9 +513,6 @@
           font-size: 0.9rem;
           padding: 8px 0;
         }
-        .tools-bar {
-          padding-bottom: max(30px, env(safe-area-inset-bottom));
-        } /* Encore plus de marge sur petit écran */
       }
     </style>
   </head>
@@ -421,7 +529,7 @@
         Apprendre les mois
       </button>
       <button class="menu-btn btn-order" onclick="startGame('order')">
-        <i class="fa-solid fa-arrow-down-1-9"></i>
+        <i class="fa-solid fa-list-ol"></i>
         Remettre dans l'ordre
       </button>
       <button class="menu-btn btn-color" onclick="startGame('color')">
@@ -432,13 +540,21 @@
         <i class="fa-solid fa-keyboard"></i>
         Mois manquants
       </button>
+      <button class="menu-btn btn-quiz" onclick="startGame('quiz')">
+        <i class="fa-solid fa-circle-question"></i>
+        Le Quiz des Mois
+      </button>
     </div>
 
     <!-- Zone de Jeu -->
     <div id="game-area">
       <div class="instruction-bar" id="instruction-text">Consigne...</div>
-      <div class="scroll-container">
-        <div class="months-grid" id="grid"></div>
+      <div class="scroll-container" id="scroll-container">
+        <!-- Conteneur générique -->
+        <div
+          id="game-content"
+          style="width: 100%; display: flex; justify-content: center"
+        ></div>
       </div>
     </div>
 
@@ -446,9 +562,13 @@
     <div class="tools-bar" id="tools-bar" style="display: none"></div>
 
     <!-- Tag de Version -->
-    <div class="version-tag">v1.1</div>
+    <div class="version-tag">v2.1</div>
 
     <script>
+      // --- SVG Citrouille (Pumpkin) ---
+      // Simple path SVG pour remplacer l'emoji
+      const pumpkinSVG = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M256 160c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48zm224.9 69c-9-33.6-33.8-61.9-66.7-77.9-1.9-.9-5.1-.9-6.9 1-17.6 18.6-43.1 30.7-71.3 30.7-18.2 0-35.3-5.2-50.2-14.2-7.2-4.3-15-8.2-23.2-11.7 4.2-11.8 6.5-24.5 6.5-37.9 0-61.9-50.1-112-112-112S44 58.1 44 120c0 13.4 2.3 26.1 6.5 37.9-8.3 3.5-16 7.4-23.2 11.7C12.5 178.6 0 196.2 0 215c0 101.6 114.6 184 256 184s256-82.4 256-184c0-11-3.6-21.2-10.1-30zM256 352c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"/></svg>`;
+
       // --- Configuration ---
       const monthsData = [
         {
@@ -456,92 +576,88 @@
           name: "Janvier",
           season: "winter",
           icon: "fa-regular fa-snowflake",
-          emoji: "",
         },
         {
           id: 2,
           name: "Février",
           season: "winter",
           icon: "fa-solid fa-person-skiing",
-          emoji: "",
         },
-        {
-          id: 3,
-          name: "Mars",
-          season: "spring",
-          icon: "fa-solid fa-seedling",
-          emoji: "",
-        },
-        {
-          id: 4,
-          name: "Avril",
-          season: "spring",
-          icon: "fa-solid fa-egg",
-          emoji: "",
-        },
-        {
-          id: 5,
-          name: "Mai",
-          season: "spring",
-          icon: "fa-solid fa-archway",
-          emoji: "",
-        },
-        {
-          id: 6,
-          name: "Juin",
-          season: "summer",
-          icon: "fa-solid fa-sun",
-          emoji: "",
-        },
+        { id: 3, name: "Mars", season: "spring", icon: "fa-solid fa-seedling" },
+        { id: 4, name: "Avril", season: "spring", icon: "fa-solid fa-egg" },
+        { id: 5, name: "Mai", season: "spring", icon: "fa-solid fa-archway" },
+        { id: 6, name: "Juin", season: "summer", icon: "fa-solid fa-sun" },
         {
           id: 7,
           name: "Juillet",
           season: "summer",
           icon: "fa-solid fa-umbrella-beach",
-          emoji: "",
         },
         {
           id: 8,
           name: "Août",
           season: "summer",
           icon: "fa-solid fa-ice-cream",
-          emoji: "",
         },
         {
           id: 9,
           name: "Septembre",
           season: "autumn",
           icon: "fa-solid fa-school",
-          emoji: "",
         },
-        { id: 10, name: "Octobre", season: "autumn", icon: "", emoji: "🎃" },
+        { id: 10, name: "Octobre", season: "autumn", customSvg: pumpkinSVG }, // Utilise le SVG custom
         {
           id: 11,
           name: "Novembre",
           season: "autumn",
           icon: "fa-solid fa-wind",
-          emoji: "",
         },
         {
           id: 12,
           name: "Décembre",
           season: "winter",
           icon: "fa-solid fa-sleigh",
-          emoji: "",
         },
       ];
 
       const seasons = {
         winter: { name: "Hiver", color: "#1565c0", bg: "#e3f2fd" },
         spring: { name: "Printemps", color: "#2e7d32", bg: "#e8f5e9" },
-        summer: { name: "Été", color: "#c62828", bg: "#ffebee" }, // Rouge
-        autumn: { name: "Automne", color: "#ef6c00", bg: "#fff3e0" }, // Orange
+        summer: { name: "Été", color: "#c62828", bg: "#ffebee" },
+        autumn: { name: "Automne", color: "#ef6c00", bg: "#fff3e0" },
       };
+
+      const quizQuestions = [
+        { q: "Quel est le mois de Noël ?", a: 12 },
+        { q: "Quand fête-t-on Halloween ?", a: 10 },
+        { q: "Le premier mois de l'année ?", a: 1 },
+        { q: "A quel mois cherche-t-on les œufs de Pâques ?", a: 4 },
+        { q: "C'est la rentrée des classes !", a: 9 },
+        { q: "Le mois de la fête de la musique (et l'été) ?", a: 6 },
+        { q: "Le mois des vacances (Juillet et... ?) ?", a: 8 },
+        { q: "Le mois des amoureux (Saint Valentin) ?", a: 2 },
+        { q: "Le dernier mois de l'année ?", a: 12 },
+        { q: "Le mois du poisson d'...", a: 4 },
+        { q: "En quel mois commence le Printemps ?", a: 3 },
+      ];
 
       let currentMode = "";
       let selectedColorTool = null;
       let score = 0;
-      let sortableInstance = null;
+      let sortableInstances = [];
+
+      // --- Init ---
+      window.onload = function () {
+        const savedScore = localStorage.getItem("baptiste_score");
+        if (savedScore) {
+          score = parseInt(savedScore);
+          updateScoreDisplay();
+        }
+      };
+
+      function updateScoreDisplay() {
+        document.getElementById("score-display").textContent = `🌟 ${score}`;
+      }
 
       function speak(text) {
         if ("speechSynthesis" in window) {
@@ -560,17 +676,17 @@
         document.getElementById("game-area").style.display = "flex";
         document.getElementById("tools-bar").style.display = "flex";
 
-        const grid = document.getElementById("grid");
-        grid.innerHTML = "";
-        if (sortableInstance) {
-          sortableInstance.destroy();
-          sortableInstance = null;
-        }
+        const gameContent = document.getElementById("game-content");
+        gameContent.innerHTML = "";
+
+        sortableInstances.forEach((s) => s.destroy());
+        sortableInstances = [];
 
         if (mode === "learn") setupLearnMode();
         if (mode === "order") setupOrderGame();
         if (mode === "color") setupColorGame();
         if (mode === "write") setupWriteGame();
+        if (mode === "quiz") setupQuizGame();
       }
 
       function returnToMenu() {
@@ -586,9 +702,13 @@
         div.setAttribute("data-id", month.id);
         div.setAttribute("data-season", month.season);
 
-        const iconHtml = month.emoji
-          ? `<span class="emoji">${month.emoji}</span>`
-          : `<i class="${month.icon}"></i>`;
+        // Gestion Icone FontAwesome vs SVG Custom
+        let iconHtml = "";
+        if (month.customSvg) {
+          iconHtml = month.customSvg;
+        } else {
+          iconHtml = `<i class="${month.icon}"></i>`;
+        }
 
         div.innerHTML = `${iconHtml}<div class="month-name">${month.name}</div>`;
         return div;
@@ -598,8 +718,8 @@
       function setupLearnMode() {
         document.getElementById("instruction-text").textContent =
           "Touche une carte pour écouter le mois.";
-        const grid = document.getElementById("grid");
-        const toolsBar = document.getElementById("tools-bar");
+        const grid = document.createElement("div");
+        grid.className = "months-grid";
 
         monthsData.forEach((m) => {
           const card = createCard(m);
@@ -614,77 +734,127 @@
           };
           grid.appendChild(card);
         });
+        document.getElementById("game-content").appendChild(grid);
 
+        const toolsBar = document.getElementById("tools-bar");
         toolsBar.innerHTML = `<button class="tool-btn btn-back" onclick="returnToMenu()"><i class="fa-solid fa-arrow-left"></i> Menu</button>`;
       }
 
       // --- JEU 1 : Ordre ---
       function setupOrderGame() {
         document.getElementById("instruction-text").textContent =
-          "Glisse les étiquettes pour les mettre dans l'ordre !";
-        const grid = document.getElementById("grid");
+          "Glisse chaque étiquette dans la case numérotée correspondante.";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "order-game-layout";
+
+        const slotsContainer = document.createElement("div");
+        slotsContainer.className = "slots-container";
+
+        for (let i = 1; i <= 12; i++) {
+          const slot = document.createElement("div");
+          slot.className = "slot-box";
+          slot.setAttribute("data-number", i);
+          slot.setAttribute("data-slot-id", i);
+
+          const sortable = new Sortable(slot, {
+            group: "months",
+            animation: 150,
+            ghostClass: "sortable-ghost",
+            put: (to) => to.el.children.length < 1,
+          });
+          sortableInstances.push(sortable);
+          slotsContainer.appendChild(slot);
+        }
+        wrapper.appendChild(slotsContainer);
+
+        const poolContainer = document.createElement("div");
+        poolContainer.className = "pool-container";
 
         let shuffled = [...monthsData].sort(() => Math.random() - 0.5);
-
         shuffled.forEach((m) => {
           const card = createCard(m);
           card.style.cursor = "grab";
-          // Important : Désactiver les actions tactiles natives (scroll) sur les cartes
-          // pour que le Drag & Drop prenne la priorité absolue
           card.classList.add("force-drag");
-
           card.style.background = "white";
           card.style.color = "#555";
-          grid.appendChild(card);
+          poolContainer.appendChild(card);
         });
 
-        // Config Drag & Drop optimisée pour tactile
-        sortableInstance = new Sortable(grid, {
-          animation: 200,
-          delay: 0, // Instantané
-          touchStartThreshold: 5, // Faut bouger un peu pour commencer le drag (évite les clics accidentels)
-          chosenClass: "sortable-chosen",
+        const sortablePool = new Sortable(poolContainer, {
+          group: "months",
+          animation: 150,
           ghostClass: "sortable-ghost",
-          forceFallback: false,
-          onStart: function (evt) {
+          touchStartThreshold: 5,
+          delay: 0,
+          onStart: function () {
             if (navigator.vibrate) navigator.vibrate(20);
           },
         });
+        sortableInstances.push(sortablePool);
+
+        wrapper.appendChild(poolContainer);
+        document.getElementById("game-content").appendChild(wrapper);
 
         setupValidationButton(validateOrder);
       }
 
       function validateOrder() {
-        const cards = document.querySelectorAll(".month-card");
+        const slots = document.querySelectorAll(".slot-box");
         let errors = 0;
+        let empty = 0;
 
-        cards.forEach((card, index) => {
-          const id = parseInt(card.getAttribute("data-id"));
-          if (id === index + 1) {
-            card.classList.add("correct");
-            const season = card.getAttribute("data-season");
-            card.classList.add(`style-${season}`);
+        slots.forEach((slot) => {
+          const slotId = parseInt(slot.getAttribute("data-slot-id"));
+          const card = slot.firstElementChild;
+          if (card) {
+            const cardId = parseInt(card.getAttribute("data-id"));
+            if (cardId === slotId) {
+              card.classList.add("correct");
+              const season = card.getAttribute("data-season");
+              card.classList.add(`style-${season}`);
+            } else {
+              card.classList.add("wrong");
+              setTimeout(() => card.classList.remove("wrong"), 500);
+              errors++;
+            }
           } else {
-            card.classList.add("wrong");
-            setTimeout(() => card.classList.remove("wrong"), 500);
+            empty++;
             errors++;
           }
         });
-        if (errors === 0) handleWin();
+
+        if (errors === 0) {
+          handleWin();
+        } else if (empty > 0) {
+          document.getElementById("instruction-text").textContent =
+            "Il reste des cases vides !";
+          setTimeout(
+            () =>
+              (document.getElementById("instruction-text").textContent =
+                "Glisse chaque étiquette dans la case numérotée correspondante."),
+            2000
+          );
+        }
       }
 
-      // --- JEU 2 : Couleurs ---
+      // --- JEU 2 : Couleurs (MÉLANGÉ) ---
       function setupColorGame() {
         document.getElementById("instruction-text").textContent =
           "Choisis une saison en bas, puis colorie les mois.";
-        const grid = document.getElementById("grid");
+        const grid = document.createElement("div");
+        grid.className = "months-grid";
 
-        monthsData.forEach((m) => {
+        // MÉLANGE AJOUTÉ ICI
+        let shuffled = [...monthsData].sort(() => Math.random() - 0.5);
+
+        shuffled.forEach((m) => {
           const card = createCard(m);
           card.classList.add("color-mode-neutral");
           card.onclick = () => applyColor(card);
           grid.appendChild(card);
         });
+        document.getElementById("game-content").appendChild(grid);
 
         const toolsBar = document.getElementById("tools-bar");
         toolsBar.innerHTML = `<button class="tool-btn btn-back" onclick="returnToMenu()"><i class="fa-solid fa-arrow-left"></i></button>`;
@@ -702,6 +872,7 @@
 
         const validateBtn = document.createElement("button");
         validateBtn.className = "tool-btn btn-validate";
+        validateBtn.id = "validate-btn";
         validateBtn.innerHTML =
           '<i class="fa-solid fa-check"></i><span>OK</span>';
         validateBtn.onclick = validateColor;
@@ -752,8 +923,8 @@
       function setupWriteGame() {
         document.getElementById("instruction-text").textContent =
           "Écris le nom des mois disparus.";
-        const grid = document.getElementById("grid");
-        const toolsBar = document.getElementById("tools-bar");
+        const grid = document.createElement("div");
+        grid.className = "months-grid";
 
         const hiddenIndices = [];
         while (hiddenIndices.length < 4) {
@@ -775,6 +946,7 @@
           }
           grid.appendChild(card);
         });
+        document.getElementById("game-content").appendChild(grid);
 
         setupValidationButton(validateWrite);
       }
@@ -801,22 +973,97 @@
         if (errors === 0) handleWin();
       }
 
+      // --- JEU 4 : LE QUIZ ---
+      function setupQuizGame() {
+        // 1. Choix question
+        const qData =
+          quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
+        document.getElementById("instruction-text").textContent = qData.q;
+        speak(qData.q);
+
+        // 2. Préparation réponses
+        const correctMonth = monthsData.find((m) => m.id === qData.a);
+        let options = [correctMonth];
+
+        // 3. Ajouter 3 faux (aléatoires et uniques)
+        while (options.length < 4) {
+          const randomM =
+            monthsData[Math.floor(Math.random() * monthsData.length)];
+          if (!options.includes(randomM)) options.push(randomM);
+        }
+
+        // 4. Mélanger
+        options.sort(() => Math.random() - 0.5);
+
+        // 5. Affichage
+        const container = document.createElement("div");
+        container.className = "quiz-container";
+
+        options.forEach((opt) => {
+          const btn = document.createElement("div");
+          btn.className = "quiz-option";
+          btn.textContent = opt.name;
+          btn.onclick = () => {
+            if (opt.id === qData.a) {
+              // Gagné
+              btn.classList.add("correct");
+              handleWin(true); // true = mode quiz (pas de bouton replay, mais suivant)
+            } else {
+              // Perdu
+              btn.classList.add("wrong");
+              setTimeout(() => btn.classList.remove("wrong"), 500);
+            }
+          };
+          container.appendChild(btn);
+        });
+
+        document.getElementById("game-content").appendChild(container);
+
+        const toolsBar = document.getElementById("tools-bar");
+        toolsBar.innerHTML = `<button class="tool-btn btn-back" onclick="returnToMenu()"><i class="fa-solid fa-arrow-left"></i></button>`;
+      }
+
       function setupValidationButton(fn) {
         const toolsBar = document.getElementById("tools-bar");
         toolsBar.innerHTML = `
                 <button class="tool-btn btn-back" onclick="returnToMenu()"><i class="fa-solid fa-arrow-left"></i></button>
-                <button class="tool-btn btn-validate" onclick="applyValidation()">VÉRIFIER</button>
+                <button class="tool-btn btn-validate" id="validate-btn" onclick="applyValidation()">VÉRIFIER</button>
             `;
         window.applyValidation = fn;
       }
 
-      function handleWin() {
+      function handleWin(isQuiz = false) {
         score += 10;
-        document.getElementById("score-display").textContent = `🌟 ${score}`;
-        document.getElementById("instruction-text").textContent =
-          "BRAVO BAPTISTE ! 🎉";
+        localStorage.setItem("baptiste_score", score);
+        updateScoreDisplay();
+
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        speak("Bravo Baptiste, c'est gagné !");
+        speak("Bravo, c'est gagné !");
+
+        const toolsBar = document.getElementById("tools-bar");
+
+        let btnIcon = "fa-rotate-right";
+        let btnText = "REJOUER";
+
+        if (isQuiz) {
+          btnIcon = "fa-arrow-right";
+          btnText = "SUIVANT";
+          document.getElementById("instruction-text").textContent =
+            "BRAVO ! Question suivante ?";
+        } else {
+          document.getElementById("instruction-text").textContent =
+            "BRAVO BAPTISTE ! 🎉";
+        }
+
+        toolsBar.innerHTML = `
+                <button class="tool-btn btn-back" onclick="returnToMenu()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <button class="tool-btn btn-replay" onclick="startGame('${currentMode}')">
+                    <i class="fa-solid ${btnIcon}"></i>
+                    <span>${btnText}</span>
+                </button>
+            `;
       }
     </script>
   </body>
