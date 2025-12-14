@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Les 12 Mois de Baptiste</title>
+
+    <!-- Configuration pour ressembler à une App Native (PWA) -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#4a90e2" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+
+    <!-- Icônes et Polices -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Fredoka:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Librairie pour le Drag & Drop facile sur tactile -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <!-- Librairie pour les confettis (récompense) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+      :root {
+        --winter: #e3f2fd;
+        --winter-dark: #1565c0;
+        --spring: #e8f5e9;
+        --spring-dark: #2e7d32;
+        --summer: #fff3e0;
+        --summer-dark: #ef6c00;
+        --autumn: #fbe9e7;
+        --autumn-dark: #d84315;
+        --neutral: #f0f2f5;
+        --text: #2c3e50;
+      }
+
+      body {
+        font-family: "Fredoka", sans-serif; /* Police ronde et lisible pour enfant */
+        background-color: var(--neutral);
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Empêche le scroll élastique sur tablette */
+        user-select: none; /* Empêche la sélection de texte accidentelle */
+      }
+
+      /* --- Navigation / Header --- */
+      header {
+        background: white;
+        padding: 10px 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
+      }
+
+      h1 {
+        font-family: "Caveat", cursive;
+        margin: 0;
+        font-size: 2rem;
+        color: var(--text);
+      }
+
+      .score-box {
+        background: #ffecb3;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        color: #d35400;
+        font-size: 1.2rem;
+      }
+
+      /* --- Menu Principal --- */
+      #menu-screen {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+      }
+
+      .menu-btn {
+        background: white;
+        border: none;
+        padding: 20px;
+        width: 80%;
+        max-width: 400px;
+        border-radius: 20px;
+        font-size: 1.5rem;
+        font-family: "Fredoka", sans-serif;
+        color: var(--text);
+        box-shadow: 0 4px 0 #bdc3c7;
+        cursor: pointer;
+        transition: transform 0.1s;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .menu-btn:active {
+        transform: translateY(4px);
+        box-shadow: none;
+      }
+
+      .menu-btn i {
+        font-size: 2rem;
+        width: 50px;
+      }
+      .btn-order {
+        color: #3498db;
+        border-left: 10px solid #3498db;
+      }
+      .btn-color {
+        color: #e67e22;
+        border-left: 10px solid #e67e22;
+      }
+      .btn-write {
+        color: #9b59b6;
+        border-left: 10px solid #9b59b6;
+      }
+
+      /* --- Zone de Jeu --- */
+      #game-area {
+        flex: 1;
+        padding: 20px;
+        display: none; /* Caché par défaut */
+        overflow-y: auto;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .instruction {
+        text-align: center;
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+        color: #7f8c8d;
+      }
+
+      /* Grille des mois */
+      .months-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 colonnes pour tablette */
+        gap: 15px;
+        width: 100%;
+        max-width: 900px;
+        margin-bottom: 80px; /* Espace pour les outils en bas */
+      }
+
+      .month-card {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s;
+        border: 3px solid transparent;
+      }
+
+      .month-card.dragging {
+        opacity: 0.5;
+        transform: scale(0.95);
+      }
+
+      .month-card i,
+      .month-card span.emoji {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: #555;
+      }
+
+      .month-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-transform: capitalize;
+      }
+
+      /* Styles spécifiques au jeu "Couleurs" */
+      .month-card.color-winter {
+        background: var(--winter);
+        color: var(--winter-dark);
+        border-color: var(--winter-dark);
+      }
+      .month-card.color-spring {
+        background: var(--spring);
+        color: var(--spring-dark);
+        border-color: var(--spring-dark);
+      }
+      .month-card.color-summer {
+        background: var(--summer);
+        color: var(--summer-dark);
+        border-color: var(--summer-dark);
+      }
+      .month-card.color-autumn {
+        background: var(--autumn);
+        color: var(--autumn-dark);
+        border-color: var(--autumn-dark);
+      }
+
+      .month-card.color-game-mode {
+        background: white; /* Départ blanc */
+        border: 2px dashed #ccc;
+      }
+
+      /* Palette d'outils (bas de page) */
+      .tools-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: white;
+        padding: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+      }
+
+      .tool-btn {
+        padding: 10px 20px;
+        border-radius: 50px;
+        border: none;
+        font-weight: bold;
+        font-family: "Fredoka", sans-serif;
+        font-size: 1rem;
+        cursor: pointer;
+        opacity: 0.6;
+        transform: scale(0.95);
+        transition: all 0.2s;
+      }
+
+      .tool-btn.active {
+        opacity: 1;
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-validate {
+        background: #27ae60;
+        color: white;
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 0 #219150;
+      }
+      .btn-validate:active {
+        transform: translateY(4px);
+        box-shadow: none;
+      }
+
+      .btn-back {
+        position: absolute;
+        left: 20px;
+        background: #95a5a6;
+        color: white;
+      }
+
+      /* Jeu Écriture */
+      .input-month {
+        width: 90%;
+        padding: 8px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-family: "Fredoka", sans-serif;
+        font-size: 1rem;
+        text-align: center;
+        display: none; /* Caché par défaut */
+      }
+      .input-month:focus {
+        border-color: #3498db;
+        outline: none;
+      }
+      .missing-mode .month-name {
+        display: none;
+      } /* Cache le nom si c'est le mode manquant */
+      .missing-mode .input-month {
+        display: block;
+      }
+
+      /* États de validation */
+      .correct {
+        border: 3px solid #2ecc71 !important;
+        background: #eaffea !important;
+      }
+      .wrong {
+        border: 3px solid #e74c3c !important;
+        animation: shake 0.5s;
+      }
+
+      @keyframes shake {
+        0% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-5px);
+        }
+        75% {
+          transform: translateX(5px);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .months-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        h1 {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Jeu de Baptiste</h1>
+      <div class="score-box" id="score-display">🌟 0</div>
+    </header>
+
+    <!-- Menu Principal -->
+    <div id="menu-screen">
+      <button class="menu-btn btn-order" onclick="startGame('order')">
+        <i class="fa-solid fa-arrow-down-1-9"></i>
+        Remettre dans l'ordre
+      </button>
+      <button class="menu-btn btn-color" onclick="startGame('color')">
+        <i class="fa-solid fa-palette"></i>
+        Les couleurs des saisons
+      </button>
+      <button class="menu-btn btn-write" onclick="startGame('write')">
+        <i class="fa-solid fa-keyboard"></i>
+        Les mois manquants
+      </button>
+    </div>
+
+    <!-- Zone de Jeu -->
+    <div id="game-area">
+      <p class="instruction" id="instruction-text">Consigne du jeu ici...</p>
+      <div class="months-grid" id="grid">
+        <!-- Les cartes seront générées ici -->
+      </div>
+    </div>
+
+    <!-- Barre d'outils (Palette ou Validation) -->
+    <div class="tools-bar" id="tools-bar" style="display: none">
+      <!-- Sera rempli dynamiquement selon le jeu -->
+    </div>
+
+    <script>
+      // --- Données ---
+      const monthsData = [
+        {
+          id: 1,
+          name: "Janvier",
+          season: "winter",
+          icon: "fa-regular fa-snowflake",
+          emoji: "",
+        },
+        {
+          id: 2,
+          name: "Février",
+          season: "winter",
+          icon: "fa-solid fa-person-skiing",
+          emoji: "",
+        },
+        {
+          id: 3,
+          name: "Mars",
+          season: "spring",
+          icon: "fa-solid fa-seedling",
+          emoji: "",
+        },
+        {
+          id: 4,
+          name: "Avril",
+          season: "spring",
+          icon: "fa-solid fa-egg",
+          emoji: "",
+        }, // Oeuf de Pâques
+        {
+          id: 5,
+          name: "Mai",
+          season: "spring",
+          icon: "fa-solid fa-archway",
+          emoji: "",
+        }, // Arche/Pont
+        {
+          id: 6,
+          name: "Juin",
+          season: "summer",
+          icon: "fa-solid fa-sun",
+          emoji: "",
+        },
+        {
+          id: 7,
+          name: "Juillet",
+          season: "summer",
+          icon: "fa-solid fa-umbrella-beach",
+          emoji: "",
+        },
+        {
+          id: 8,
+          name: "Août",
+          season: "summer",
+          icon: "fa-solid fa-ice-cream",
+          emoji: "",
+        },
+        {
+          id: 9,
+          name: "Septembre",
+          season: "autumn",
+          icon: "fa-solid fa-school",
+          emoji: "",
+        },
+        { id: 10, name: "Octobre", season: "autumn", icon: "", emoji: "🎃" }, // Citrouille
+        {
+          id: 11,
+          name: "Novembre",
+          season: "autumn",
+          icon: "fa-solid fa-wind",
+          emoji: "",
+        },
+        {
+          id: 12,
+          name: "Décembre",
+          season: "winter",
+          icon: "fa-solid fa-sleigh",
+          emoji: "",
+        },
+      ];
+
+      const seasons = {
+        winter: { name: "Hiver", color: "#1565c0", bg: "#e3f2fd" },
+        spring: { name: "Printemps", color: "#2e7d32", bg: "#e8f5e9" },
+        summer: { name: "Été", color: "#ef6c00", bg: "#fff3e0" },
+        autumn: { name: "Automne", color: "#d84315", bg: "#fbe9e7" },
+      };
+
+      let currentMode = "";
+      let selectedColorTool = null;
+      let score = 0;
+      let sortableInstance = null;
+
+      // --- Fonctions Globales ---
+
+      function startGame(mode) {
+        currentMode = mode;
+        document.getElementById("menu-screen").style.display = "none";
+        document.getElementById("game-area").style.display = "flex";
+        document.getElementById("tools-bar").style.display = "flex";
+
+        const grid = document.getElementById("grid");
+        grid.innerHTML = ""; // Vider la grille
+
+        if (mode === "order") setupOrderGame();
+        if (mode === "color") setupColorGame();
+        if (mode === "write") setupWriteGame();
+      }
+
+      function returnToMenu() {
+        document.getElementById("menu-screen").style.display = "flex";
+        document.getElementById("game-area").style.display = "none";
+        document.getElementById("tools-bar").style.display = "none";
+        // Nettoyage
+        if (sortableInstance) sortableInstance.destroy();
+      }
+
+      function createCard(month, isInteractive = false) {
+        const div = document.createElement("div");
+        div.className = "month-card";
+        div.setAttribute("data-id", month.id);
+        div.setAttribute("data-season", month.season); // Pour le jeu de couleurs
+
+        // Icone ou Emoji
+        let iconHtml = "";
+        if (month.emoji) {
+          iconHtml = `<span class="emoji">${month.emoji}</span>`;
+        } else {
+          iconHtml = `<i class="${month.icon}"></i>`;
+        }
+
+        // Input pour le jeu d'écriture
+        let contentHtml = `<div class="month-name">${month.name}</div>`;
+
+        div.innerHTML = `${iconHtml}${contentHtml}`;
+        return div;
+      }
+
+      // --- Jeu 1 : L'Ordre ---
+
+      function setupOrderGame() {
+        document.getElementById("instruction-text").textContent =
+          "Mets les mois dans le bon ordre ! (Glisse les cartes)";
+        const grid = document.getElementById("grid");
+
+        // Mélanger les mois
+        let shuffled = [...monthsData].sort(() => Math.random() - 0.5);
+
+        shuffled.forEach((m) => {
+          const card = createCard(m);
+          // Style spécifique pour l'ordre
+          card.style.cursor = "grab";
+          grid.appendChild(card);
+        });
+
+        // Activer SortableJS
+        sortableInstance = new Sortable(grid, {
+          animation: 150,
+          ghostClass: "dragging",
+        });
+
+        setupValidationButton(validateOrder);
+      }
+
+      function validateOrder() {
+        const cards = document.querySelectorAll(".month-card");
+        let errors = 0;
+
+        cards.forEach((card, index) => {
+          const id = parseInt(card.getAttribute("data-id"));
+          if (id === index + 1) {
+            card.classList.add("correct");
+            card.classList.remove("wrong");
+          } else {
+            card.classList.add("wrong");
+            card.classList.remove("correct");
+            errors++;
+          }
+        });
+
+        if (errors === 0) handleWin();
+      }
+
+      // --- Jeu 2 : Les Couleurs ---
+
+      function setupColorGame() {
+        document.getElementById("instruction-text").textContent =
+          "Choisis une saison en bas et touche les mois correspondants.";
+        const grid = document.getElementById("grid");
+
+        // Afficher dans l'ordre mais en blanc
+        monthsData.forEach((m) => {
+          const card = createCard(m);
+          card.classList.add("color-game-mode");
+          card.onclick = () => applyColor(card);
+          grid.appendChild(card);
+        });
+
+        // Barre d'outils palette
+        const toolsBar = document.getElementById("tools-bar");
+        toolsBar.innerHTML = `<button class="tool-btn btn-back" onclick="returnToMenu()">Menu</button>`;
+
+        Object.keys(seasons).forEach((key) => {
+          const s = seasons[key];
+          const btn = document.createElement("button");
+          btn.className = "tool-btn";
+          btn.style.backgroundColor = s.bg;
+          btn.style.color = s.color;
+          btn.style.border = `2px solid ${s.color}`;
+          btn.textContent = s.name;
+          btn.onclick = () => selectColorTool(key, btn);
+          toolsBar.appendChild(btn);
+        });
+
+        // Bouton valider à droite
+        const validateBtn = document.createElement("button");
+        validateBtn.className = "tool-btn btn-validate";
+        validateBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+        validateBtn.onclick = validateColor;
+        toolsBar.appendChild(validateBtn);
+
+        // Sélectionner l'hiver par défaut
+        selectColorTool("winter", toolsBar.children[1]); // Index 1 car 0 est le bouton retour
+      }
+
+      function selectColorTool(seasonKey, btnElement) {
+        selectedColorTool = seasonKey;
+        // Gestion UI active
+        document
+          .querySelectorAll(".tool-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btnElement.classList.add("active");
+      }
+
+      function applyColor(card) {
+        if (!selectedColorTool) return;
+        // Nettoyer les autres classes de saison
+        card.classList.remove(
+          "color-winter",
+          "color-spring",
+          "color-summer",
+          "color-autumn"
+        );
+        // Ajouter la nouvelle
+        card.classList.add(`color-${selectedColorTool}`);
+        // Stocker le choix pour validation
+        card.setAttribute("data-user-choice", selectedColorTool);
+      }
+
+      function validateColor() {
+        const cards = document.querySelectorAll(".month-card");
+        let errors = 0;
+
+        cards.forEach((card) => {
+          const correctSeason = card.getAttribute("data-season");
+          const userChoice = card.getAttribute("data-user-choice");
+
+          if (correctSeason === userChoice) {
+            card.style.border = "4px solid #2ecc71"; // Visuel fort
+          } else {
+            card.classList.add("wrong");
+            setTimeout(() => card.classList.remove("wrong"), 500); // Petit shake
+            errors++;
+          }
+        });
+
+        if (errors === 0) handleWin();
+      }
+
+      // --- Jeu 3 : Écriture (Mois manquants) ---
+
+      function setupWriteGame() {
+        document.getElementById("instruction-text").textContent =
+          "Des mois ont disparu ! Écris leur nom.";
+        const grid = document.getElementById("grid");
+
+        // Choisir 3 mois au hasard à cacher
+        const hiddenIndices = [];
+        while (hiddenIndices.length < 3) {
+          let r = Math.floor(Math.random() * 12);
+          if (hiddenIndices.indexOf(r) === -1) hiddenIndices.push(r);
+        }
+
+        monthsData.forEach((m, index) => {
+          const card = createCard(m);
+
+          if (hiddenIndices.includes(index)) {
+            // Cacher le nom, montrer l'input
+            card.classList.add("missing-mode");
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "input-month";
+            input.placeholder = "?";
+            input.setAttribute("autocomplete", "off"); // Évite les suggestions trop faciles
+            card.appendChild(input);
+          }
+
+          // Style par défaut (coloré pour aider)
+          card.classList.add(`color-${m.season}`);
+          grid.appendChild(card);
+        });
+
+        setupValidationButton(validateWrite);
+      }
+
+      function validateWrite() {
+        const cards = document.querySelectorAll(".month-card");
+        let errors = 0;
+
+        cards.forEach((card, index) => {
+          if (card.classList.contains("missing-mode")) {
+            const input = card.querySelector("input");
+            const correctName = monthsData[index].name.toLowerCase();
+            const userVal = input.value.trim().toLowerCase();
+
+            if (userVal === correctName) {
+              card.classList.add("correct");
+              card.classList.remove("wrong");
+              // Afficher le vrai texte
+              card.querySelector(".month-name").style.display = "block";
+              input.style.display = "none";
+            } else {
+              card.classList.add("wrong");
+              errors++;
+            }
+          }
+        });
+
+        if (errors === 0) handleWin();
+      }
+
+      // --- Helpers UI ---
+
+      function setupValidationButton(callback) {
+        const toolsBar = document.getElementById("tools-bar");
+        toolsBar.innerHTML = `
+                <button class="tool-btn btn-back" onclick="returnToMenu()">Menu</button>
+                <button class="tool-btn btn-validate" onclick="applyValidation()">Vérifier</button>
+            `;
+        // Trick pour passer la fonction
+        window.applyValidation = callback;
+      }
+
+      function handleWin() {
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+        score += 10;
+        document.getElementById("score-display").textContent = `🌟 ${score}`;
+        document.getElementById("instruction-text").textContent =
+          "BRAVO BAPTISTE ! 🎉";
+
+        // Son de victoire (optionnel, nécessite interaction user avant)
+        // const audio = new Audio('win.mp3'); audio.play();
+      }
+    </script>
+  </body>
+</html>
